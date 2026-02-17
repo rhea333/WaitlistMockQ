@@ -8,10 +8,19 @@ import { MeshLineGeometry, MeshLineMaterial } from 'meshline'
 
 extend({ MeshLineGeometry, MeshLineMaterial })
 
+const publicAsset = (path) => `${process.env.PUBLIC_URL || ''}${path}`
+const qmarkLogoUrl = publicAsset('/MockQmarkLogo.png')
+const qwordLogoUrl = publicAsset('/MockQwordLogo.png')
+
+const supabaseUrl = `${process.env.REACT_APP_SUPABASE_URL || ''}`.replace(/\/+$/, '')
+const supabasePublishableKey = process.env.REACT_APP_SUPABASE_PUBLISHABLE_KEY || ''
+const supabaseTable = process.env.REACT_APP_SUPABASE_TABLE || 'waitlist_emails'
+const supabaseEmailColumn = process.env.REACT_APP_SUPABASE_EMAIL_COLUMN || 'email'
+
 useGLTF.preload(
   'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/5huRVDzcoDwnbgrKUo1Lzs/53b6dd7d6b4ffcdbd338fa60265949e1/tag.glb'
 )
-useTexture.preload('/MockQmarkLogo.png')
+useTexture.preload(qmarkLogoUrl)
 
 export default function App() {
   // const { debug } = useControls({ debug: false })
@@ -35,12 +44,31 @@ export default function App() {
     try {
       const controller = new AbortController()
       timeout = setTimeout(() => controller.abort(), 12000)
-      const response = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: trimmedEmail }),
-        signal: controller.signal
-      })
+      let response
+      if (supabaseUrl && supabasePublishableKey) {
+        response = await fetch(
+          `${supabaseUrl}/rest/v1/${encodeURIComponent(supabaseTable)}?on_conflict=${encodeURIComponent(supabaseEmailColumn)}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: supabasePublishableKey,
+              Authorization: `Bearer ${supabasePublishableKey}`,
+              Prefer: 'resolution=ignore-duplicates,return=representation'
+            },
+            body: JSON.stringify([{ [supabaseEmailColumn]: trimmedEmail.toLowerCase() }]),
+            signal: controller.signal
+          }
+        )
+      } else {
+        response = await fetch('/api/waitlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmedEmail }),
+          signal: controller.signal
+        })
+      }
+
       const raw = await response.text()
       let data = {}
       try {
@@ -165,8 +193,8 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
   const { nodes, materials } = useGLTF(
     'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/5huRVDzcoDwnbgrKUo1Lzs/53b6dd7d6b4ffcdbd338fa60265949e1/tag.glb'
   )
-  const qmarkBandLogo = useTexture('/MockQmarkLogo.png')
-  const qwordLogo = useTexture('/MockQwordLogo.png')
+  const qmarkBandLogo = useTexture(qmarkLogoUrl)
+  const qwordLogo = useTexture(qwordLogoUrl)
   qwordLogo.anisotropy = 16
 
   const texture = useMemo(() => {
@@ -275,7 +303,10 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
               position={[0, -1.2, -0.05]}
               onPointerOver={() => hover(true)}
               onPointerOut={() => hover(false)}
-              onPointerUp={(e) => (e.target.releasePointerCapture(e.pointerId), drag(false))}
+              onPointerUp={(e) => {
+                e.target.releasePointerCapture(e.pointerId)
+                drag(false)
+              }}
               onPointerDown={(e) =>
                 e.target.setPointerCapture(e.pointerId) ||
                 drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation())))
