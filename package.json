@@ -2,7 +2,7 @@
   "name": "mockqwaitlist",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://rhea333.github.io/MockQWaitlist",
+  "homepage": ".",
   "dependencies": {
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
