@@ -1,0 +1,106 @@
+* { box-sizing: border-box; }
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #0b0b0f;
+  position: relative;
+
+  /* less transparent + farther apart */
+  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 1.2px, transparent 1.2px);
+  background-size: 28px 28px;  /* spacing between dots */
+
+  background-position: 0 0;
+  overflow: hidden;
+}
+
+body::before,
+body::after,
+#root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+  mix-blend-mode: screen;
+}
+
+body::before {
+  /* Sparse subset 1 */
+  background-image: radial-gradient(rgba(255, 255, 255, 0.48) 1.5px, transparent 1.5px);
+  background-size: 112px 112px;
+  background-position: 14px 10px;
+  opacity: 0.1;
+  animation: twinkleA 6.7s infinite steps(12, end);
+  transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
+}
+
+body::after {
+  /* Sparse subset 2 */
+  background-image: radial-gradient(rgba(255, 255, 255, 0.42) 1.35px, transparent 1.35px);
+  background-size: 140px 140px;
+  background-position: 42px 66px;
+  opacity: 0.085;
+  animation: twinkleB 8.9s infinite steps(14, end);
+  transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
+}
+
+#root::before {
+  /* Sparse subset 3 */
+  background-image: radial-gradient(rgba(255, 255, 255, 0.38) 1.25px, transparent 1.25px);
+  background-size: 168px 168px;
+  background-position: 88px 24px;
+  opacity: 0.075;
+  animation: twinkleC 11.3s infinite steps(16, end);
+  transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
+}
+
+body:hover::before {
+  opacity: 0.16;
+  filter: brightness(1.25) blur(0.15px);
+  transform: scale(1.003);
+}
+
+body:hover::after {
+  opacity: 0.14;
+  filter: brightness(1.22) blur(0.15px);
+  transform: scale(1.003);
+}
+
+body:hover #root::before {
+  opacity: 0.12;
+  filter: brightness(1.2) blur(0.12px);
+  transform: scale(1.003);
+}
+
+@keyframes twinkleA {
+  0% { opacity: 0.03; background-position: 14px 10px; }
+  17% { opacity: 0.13; }
+  31% { opacity: 0.02; background-position: 18px 14px; }
+  49% { opacity: 0.14; }
+  72% { opacity: 0.04; background-position: 11px 22px; }
+  100% { opacity: 0.03; background-position: 14px 10px; }
+}
+
+@keyframes twinkleB {
+  0% { opacity: 0.02; background-position: 42px 66px; }
+  21% { opacity: 0.12; }
+  36% { opacity: 0.03; background-position: 48px 58px; }
+  57% { opacity: 0.13; }
+  83% { opacity: 0.025; background-position: 37px 72px; }
+  100% { opacity: 0.02; background-position: 42px 66px; }
+}
+
+@keyframes twinkleC {
+  0% { opacity: 0.015; background-position: 88px 24px; }
+  13% { opacity: 0.08; }
+  39% { opacity: 0.02; background-position: 96px 31px; }
+  61% { opacity: 0.09; }
+  88% { opacity: 0.018; background-position: 81px 18px; }
+  100% { opacity: 0.015; background-position: 88px 24px; }
+}

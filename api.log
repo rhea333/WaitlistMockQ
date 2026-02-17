@@ -1,0 +1,6 @@
+
+> mockqwaitlist@0.1.0 start:api
+> node server.js
+
+Kit API proxy listening on http://localhost:8787
+^C^C
