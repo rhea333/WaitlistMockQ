@@ -12,11 +12,6 @@ const publicAsset = (path) => `${process.env.PUBLIC_URL || ''}${path}`
 const qmarkLogoUrl = publicAsset('/MockQmarkLogo.png')
 const qwordLogoUrl = publicAsset('/MockQwordLogo.png')
 
-const supabaseUrl = `${process.env.REACT_APP_SUPABASE_URL || ''}`.replace(/\/+$/, '')
-const supabasePublishableKey = process.env.REACT_APP_SUPABASE_PUBLISHABLE_KEY || ''
-const supabaseTable = process.env.REACT_APP_SUPABASE_TABLE || 'waitlist_emails'
-const supabaseEmailColumn = process.env.REACT_APP_SUPABASE_EMAIL_COLUMN || 'email'
-
 useGLTF.preload(
   'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/5huRVDzcoDwnbgrKUo1Lzs/53b6dd7d6b4ffcdbd338fa60265949e1/tag.glb'
 )
@@ -44,30 +39,12 @@ export default function App() {
     try {
       const controller = new AbortController()
       timeout = setTimeout(() => controller.abort(), 12000)
-      let response
-      if (supabaseUrl && supabasePublishableKey) {
-        response = await fetch(
-          `${supabaseUrl}/rest/v1/${encodeURIComponent(supabaseTable)}?on_conflict=${encodeURIComponent(supabaseEmailColumn)}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              apikey: supabasePublishableKey,
-              Authorization: `Bearer ${supabasePublishableKey}`,
-              Prefer: 'resolution=ignore-duplicates,return=representation'
-            },
-            body: JSON.stringify([{ [supabaseEmailColumn]: trimmedEmail.toLowerCase() }]),
-            signal: controller.signal
-          }
-        )
-      } else {
-        response = await fetch('/api/waitlist', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: trimmedEmail }),
-          signal: controller.signal
-        })
-      }
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail }),
+        signal: controller.signal
+      })
 
       const raw = await response.text()
       let data = {}
@@ -104,7 +81,7 @@ export default function App() {
     >
       <ambientLight intensity={Math.PI} />
       <Html position={[-3.45, 0.35, 0]} transform={false} center={false}>
-        <div style={{ color: 'white', fontFamily: 'Roboto, sans-serif' }}>
+        <div style={{ color: 'white', fontFamily: 'Roboto, sans-serif', transform: 'translateX(-50px)' }}>
           <div style={{ fontSize: '68px', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.05, whiteSpace: 'nowrap' }}>
             Join the waitlist.
           </div>
@@ -226,7 +203,11 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
     return tex
   }, [qmarkBandLogo])
 
-  const { width, height } = useThree((state) => state.size)
+  const { width, height, camera } = useThree((state) => ({
+    width: state.size.width,
+    height: state.size.height,
+    camera: state.camera
+  }))
   const [curve] = useState(() => new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]))
   const [dragged, drag] = useState(false)
   const [hovered, hover] = useState(false)
@@ -275,7 +256,13 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
 
   curve.curveType = 'chordal'
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-  const SHIFT_X = 0.75
+  const baseShiftX = 0.75
+  const pixelShiftX = 100
+  const worldShiftX =
+    camera?.isPerspectiveCamera && height
+      ? pixelShiftX * ((2 * Math.tan((camera.fov * Math.PI) / 360) * Math.abs(camera.position.z)) / height)
+      : 0
+  const SHIFT_X = baseShiftX + worldShiftX
 
   return (
     <>
