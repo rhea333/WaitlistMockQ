@@ -33,7 +33,7 @@ export default function App() {
   const isCompactLayout = viewportWidth <= 1024
   const layoutWidth = isCompactLayout ? 'min(92vw, 560px)' : '592px'
   const inputWidth = isCompactLayout ? '100%' : '470px'
-  const compactTop = viewportWidth <= 640 ? 'calc(78% - 100px)' : 'calc(74% - 100px)'
+  const compactTop = viewportWidth <= 640 ? 'calc(78% - 150px)' : 'calc(74% - 150px)'
   const htmlProps = isCompactLayout
     ? { fullscreen: true, style: { pointerEvents: 'none' } }
     : { position: [-3.45, 0.35, 0], transform: false, center: false }
@@ -52,7 +52,7 @@ export default function App() {
     : {
         color: 'white',
         fontFamily: 'Roboto, sans-serif',
-        transform: 'translateX(100px)',
+        transform: 'translateX(50px)',
         width: layoutWidth,
         textAlign: 'left',
         pointerEvents: 'auto'
@@ -329,7 +329,7 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
       ? upPixelShift * ((2 * Math.tan((camera.fov * Math.PI) / 360) * Math.abs(camera.position.z)) / height)
       : 0
   const SHIFT_Y = (isCompactLayout ? 0.55 : 0) + upWorldShift
-  const bandOnlyPixelShift = isCompactLayout ? 225 : 0
+  const bandOnlyPixelShift = isCompactLayout ? 185 : 0
   const BAND_ONLY_SHIFT_X =
     camera?.isPerspectiveCamera && height
       ? bandOnlyPixelShift * ((2 * Math.tan((camera.fov * Math.PI) / 360) * Math.abs(camera.position.z)) / height)
