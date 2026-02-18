@@ -22,6 +22,41 @@ export default function App() {
   const [email, setEmail] = useState('')
   const [submitStatus, setSubmitStatus] = useState('idle')
   const [submitMessage, setSubmitMessage] = useState('')
+  const [viewportWidth, setViewportWidth] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1280))
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  const isCompactLayout = viewportWidth <= 1024
+  const layoutWidth = isCompactLayout ? 'min(92vw, 560px)' : '592px'
+  const inputWidth = isCompactLayout ? '100%' : '470px'
+  const compactTop = viewportWidth <= 640 ? 'calc(78% - 100px)' : 'calc(74% - 100px)'
+  const htmlProps = isCompactLayout
+    ? { fullscreen: true, style: { pointerEvents: 'none' } }
+    : { position: [-3.45, 0.35, 0], transform: false, center: false }
+  const panelStyle = isCompactLayout
+    ? {
+        color: 'white',
+        fontFamily: 'Roboto, sans-serif',
+        position: 'absolute',
+        left: '50%',
+        top: compactTop,
+        transform: 'translateX(-50%)',
+        width: layoutWidth,
+        textAlign: 'center',
+        pointerEvents: 'auto'
+      }
+    : {
+        color: 'white',
+        fontFamily: 'Roboto, sans-serif',
+        transform: 'translateX(100px)',
+        width: layoutWidth,
+        textAlign: 'left',
+        pointerEvents: 'auto'
+      }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -77,26 +112,43 @@ export default function App() {
     <Canvas
       camera={{ position: [0, 0, 13], fov: 25 }}
       gl={{ alpha: true, antialias: true }}
-      style={{ background: 'transparent' }}
+      style={{ background: 'transparent', touchAction: 'none' }}
     >
       <ambientLight intensity={Math.PI} />
-      <Html position={[-3.45, 0.35, 0]} transform={false} center={false}>
-        <div style={{ color: 'white', fontFamily: 'Roboto, sans-serif', transform: 'translateX(-50px)' }}>
-          <div style={{ fontSize: '68px', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.05, whiteSpace: 'nowrap' }}>
+      <Html {...htmlProps}>
+        <div style={panelStyle}>
+          <div
+            style={{
+              fontSize: isCompactLayout ? '44px' : '68px',
+              fontWeight: 800,
+              letterSpacing: '-0.03em',
+              lineHeight: 1.05,
+              whiteSpace: isCompactLayout ? 'normal' : 'nowrap'
+            }}
+          >
             Join the waitlist.
           </div>
-          <div style={{ marginTop: '10px', marginLeft: '3px', fontSize: '22px', fontWeight: 400, lineHeight: 1.2, color: '#b8b8b8' }}>
+          <div
+            style={{
+              marginTop: '10px',
+              marginLeft: isCompactLayout ? '0' : '3px',
+              fontSize: isCompactLayout ? '19px' : '22px',
+              fontWeight: 400,
+              lineHeight: 1.2,
+              color: '#b8b8b8'
+            }}
+          >
             Your one-stop AI interview prep shop.
           </div>
-          <form onSubmit={handleSubmit} style={{ marginTop: '68px', width: '592px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start' }}>
+          <form onSubmit={handleSubmit} style={{ marginTop: isCompactLayout ? '36px' : '68px', width: layoutWidth }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: isCompactLayout ? 'center' : 'flex-start' }}>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email: example@gmail.com"
                 style={{
-                  width: '470px',
+                  width: inputWidth,
                   height: '54px',
                   borderRadius: '14px',
                   border: '1px solid rgba(255,255,255,0.22)',
@@ -130,7 +182,14 @@ export default function App() {
               </button>
             </div>
             {submitMessage ? (
-              <div style={{ marginTop: '10px', marginLeft: '4px', color: submitStatus === 'success' ? '#8ee29f' : '#ff9e9e', fontSize: '14px' }}>
+              <div
+                style={{
+                  marginTop: '10px',
+                  marginLeft: isCompactLayout ? '0' : '4px',
+                  color: submitStatus === 'success' ? '#8ee29f' : '#ff9e9e',
+                  fontSize: '14px'
+                }}
+              >
                 {submitMessage}
               </div>
             ) : null}
@@ -245,7 +304,7 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
       curve.points[2].copy(j1.current.lerped)
       curve.points[3].copy(fixed.current.translation())
       const pts = curve.getPoints(32)
-      for (const p of pts) p.x -= SHIFT_X
+      for (const p of pts) p.x -= SHIFT_X + BAND_ONLY_SHIFT_X
       band.current.geometry.setPoints(pts)
 
       ang.copy(card.current.angvel())
@@ -256,17 +315,29 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
 
   curve.curveType = 'chordal'
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-  const baseShiftX = 0.75
-  const pixelShiftX = 100
+  const isCompactLayout = width <= 1024
+  const baseShiftX = isCompactLayout ? 0 : 0.75
+  const pixelShiftX = isCompactLayout ? 0 : 100
   const worldShiftX =
     camera?.isPerspectiveCamera && height
       ? pixelShiftX * ((2 * Math.tan((camera.fov * Math.PI) / 360) * Math.abs(camera.position.z)) / height)
       : 0
   const SHIFT_X = baseShiftX + worldShiftX
+  const upPixelShift = isCompactLayout ? 100 : 0
+  const upWorldShift =
+    camera?.isPerspectiveCamera && height
+      ? upPixelShift * ((2 * Math.tan((camera.fov * Math.PI) / 360) * Math.abs(camera.position.z)) / height)
+      : 0
+  const SHIFT_Y = (isCompactLayout ? 0.55 : 0) + upWorldShift
+  const bandOnlyPixelShift = isCompactLayout ? 225 : 0
+  const BAND_ONLY_SHIFT_X =
+    camera?.isPerspectiveCamera && height
+      ? bandOnlyPixelShift * ((2 * Math.tan((camera.fov * Math.PI) / 360) * Math.abs(camera.position.z)) / height)
+      : 0
 
   return (
     <>
-      <group position={[SHIFT_X, 0, 0]}>
+      <group position={[SHIFT_X, SHIFT_Y, 0]}>
         <group position={[0, 4, 0]}>
           <RigidBody ref={fixed} {...segmentProps} type="fixed" />
 
@@ -363,8 +434,3 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
     </>
   )
 }
-
-
-
-
-
