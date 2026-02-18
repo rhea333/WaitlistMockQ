@@ -66,6 +66,11 @@ export default function App() {
       setSubmitMessage('Please enter your email.')
       return
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setSubmitStatus('error')
+      setSubmitMessage('Please enter a valid email address.')
+      return
+    }
 
     setSubmitStatus('loading')
     setSubmitMessage('')
@@ -144,6 +149,7 @@ export default function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: isCompactLayout ? 'center' : 'flex-start' }}>
               <input
                 type="email"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email: example@gmail.com"
@@ -267,6 +273,16 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
     height: state.size.height,
     camera: state.camera
   }))
+  const isCompactLayout = width <= 1024
+  const baseShiftX = isCompactLayout ? 0 : 0.75
+  const pixelShiftX = isCompactLayout ? 0 : 100
+  const worldShiftX =
+    camera?.isPerspectiveCamera && height
+      ? pixelShiftX * ((2 * Math.tan((camera.fov * Math.PI) / 360) * Math.abs(camera.position.z)) / height)
+      : 0
+  const SHIFT_X = baseShiftX + worldShiftX
+  const SHIFT_Y = isCompactLayout ? 1.35 : 0
+  const BAND_ONLY_SHIFT_Y = isCompactLayout ? -1.23 : -1.40
   const [curve] = useState(() => new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]))
   const [dragged, drag] = useState(false)
   const [hovered, hover] = useState(false)
@@ -304,7 +320,9 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
       curve.points[2].copy(j1.current.lerped)
       curve.points[3].copy(fixed.current.translation())
       const pts = curve.getPoints(32)
-      for (const p of pts) p.x -= SHIFT_X + BAND_ONLY_SHIFT_X
+      for (const p of pts) {
+        p.y += BAND_ONLY_SHIFT_Y
+      }
       band.current.geometry.setPoints(pts)
 
       ang.copy(card.current.angvel())
@@ -315,26 +333,6 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
 
   curve.curveType = 'chordal'
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-  const isCompactLayout = width <= 1024
-  const baseShiftX = isCompactLayout ? 0 : 0.75
-  const pixelShiftX = isCompactLayout ? 0 : 100
-  const worldShiftX =
-    camera?.isPerspectiveCamera && height
-      ? pixelShiftX * ((2 * Math.tan((camera.fov * Math.PI) / 360) * Math.abs(camera.position.z)) / height)
-      : 0
-  const SHIFT_X = baseShiftX + worldShiftX
-  const upPixelShift = isCompactLayout ? 100 : 0
-  const upWorldShift =
-    camera?.isPerspectiveCamera && height
-      ? upPixelShift * ((2 * Math.tan((camera.fov * Math.PI) / 360) * Math.abs(camera.position.z)) / height)
-      : 0
-  const SHIFT_Y = (isCompactLayout ? 0.55 : 0) + upWorldShift
-  const bandOnlyPixelShift = isCompactLayout ? 185 : 0
-  const BAND_ONLY_SHIFT_X =
-    camera?.isPerspectiveCamera && height
-      ? bandOnlyPixelShift * ((2 * Math.tan((camera.fov * Math.PI) / 360) * Math.abs(camera.position.z)) / height)
-      : 0
-
   return (
     <>
       <group position={[SHIFT_X, SHIFT_Y, 0]}>
