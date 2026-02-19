@@ -224,11 +224,19 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
     j2 = useRef(),
     j3 = useRef(),
     card = useRef()
+  const fixedAnchor = useRef(),
+    j1Anchor = useRef(),
+    j2Anchor = useRef(),
+    j3Anchor = useRef()
 
   const vec = new THREE.Vector3(),
     ang = new THREE.Vector3(),
     rot = new THREE.Vector3(),
-    dir = new THREE.Vector3()
+    dir = new THREE.Vector3(),
+    worldP0 = new THREE.Vector3(),
+    worldP1 = new THREE.Vector3(),
+    worldP2 = new THREE.Vector3(),
+    worldP3 = new THREE.Vector3()
 
   const segmentProps = { type: 'dynamic', canSleep: true, colliders: false, angularDamping: 2, linearDamping: 2 }
 
@@ -282,7 +290,6 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
       : 0
   const SHIFT_X = baseShiftX + worldShiftX
   const SHIFT_Y = isCompactLayout ? 1.35 : 0
-  const BAND_ONLY_SHIFT_Y = isCompactLayout ? -1.23 : -1.40
   const [curve] = useState(() => new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]))
   const [dragged, drag] = useState(false)
   const [hovered, hover] = useState(false)
@@ -315,15 +322,24 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
         ref.current.lerped.lerp(ref.current.translation(), delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed)))
       })
 
-      curve.points[0].copy(j3.current.translation())
-      curve.points[1].copy(j2.current.lerped)
-      curve.points[2].copy(j1.current.lerped)
-      curve.points[3].copy(fixed.current.translation())
-      const pts = curve.getPoints(32)
-      for (const p of pts) {
-        p.y += BAND_ONLY_SHIFT_Y
+      if (band.current?.parent && fixedAnchor.current && j1Anchor.current && j2Anchor.current && j3Anchor.current) {
+        const parent = band.current.parent
+        j3Anchor.current.getWorldPosition(worldP0)
+        j2Anchor.current.getWorldPosition(worldP1)
+        j1Anchor.current.getWorldPosition(worldP2)
+        fixedAnchor.current.getWorldPosition(worldP3)
+
+        curve.points[0].copy(parent.worldToLocal(worldP0))
+        curve.points[1].copy(parent.worldToLocal(worldP1))
+        curve.points[2].copy(parent.worldToLocal(worldP2))
+        curve.points[3].copy(parent.worldToLocal(worldP3))
+      } else {
+        curve.points[0].copy(j3.current.translation())
+        curve.points[1].copy(j2.current.lerped)
+        curve.points[2].copy(j1.current.lerped)
+        curve.points[3].copy(fixed.current.translation())
       }
-      band.current.geometry.setPoints(pts)
+      band.current.geometry.setPoints(curve.getPoints(32))
 
       ang.copy(card.current.angvel())
       rot.copy(card.current.rotation())
@@ -337,18 +353,23 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
     <>
       <group position={[SHIFT_X, SHIFT_Y, 0]}>
         <group position={[0, 4, 0]}>
-          <RigidBody ref={fixed} {...segmentProps} type="fixed" />
+          <RigidBody ref={fixed} {...segmentProps} type="fixed">
+            <group ref={fixedAnchor} />
+          </RigidBody>
 
           <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
             <BallCollider args={[0.1]} />
+            <group ref={j1Anchor} />
           </RigidBody>
 
           <RigidBody position={[1, 0, 0]} ref={j2} {...segmentProps}>
             <BallCollider args={[0.1]} />
+            <group ref={j2Anchor} />
           </RigidBody>
 
           <RigidBody position={[1.5, 0, 0]} ref={j3} {...segmentProps}>
             <BallCollider args={[0.1]} />
+            <group ref={j3Anchor} />
           </RigidBody>
 
           <RigidBody position={[2, 0, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
@@ -422,12 +443,12 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
               <mesh geometry={nodes.clamp.geometry} material={materials.metal} />
             </group>
           </RigidBody>
-        </group>
 
-        <mesh ref={band}>
-          <meshLineGeometry />
-          <meshLineMaterial color="white" depthTest={false} resolution={[width, height]} useMap map={texture} repeat={[-3, 1]} lineWidth={1} />
-        </mesh>
+          <mesh ref={band}>
+            <meshLineGeometry />
+            <meshLineMaterial color="white" depthTest={false} resolution={[width, height]} useMap map={texture} repeat={[-3, 1]} lineWidth={1} />
+          </mesh>
+        </group>
       </group>
     </>
   )
