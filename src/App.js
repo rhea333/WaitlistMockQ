@@ -143,7 +143,7 @@ export default function App() {
               color: '#b8b8b8'
             }}
           >
-            Your one-stop AI interview prep shop.
+            Mock Interview AI agents
           </div>
           <form onSubmit={handleSubmit} style={{ marginTop: isCompactLayout ? '36px' : '68px', width: layoutWidth }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: isCompactLayout ? 'center' : 'flex-start' }}>
