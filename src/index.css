@@ -1,106 +1,92 @@
-* { box-sizing: border-box; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-html, body, #root {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
+@font-face {
+  font-family: 'Everett';
+  src: url('./assets/everett-light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
 }
 
-body {
-  background-color: #0b0b0f;
-  position: relative;
-
-  /* less transparent + farther apart */
-  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 1.2px, transparent 1.2px);
-  background-size: 28px 28px;  /* spacing between dots */
-
-  background-position: 0 0;
-  overflow: hidden;
+@font-face {
+  font-family: 'Commit Mono';
+  src: url('./assets/commit-mono-400-regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
-body::before,
-body::after,
-#root::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-repeat: repeat;
-  mix-blend-mode: screen;
+@layer base {
+  :root {
+    --background: 240 8% 3%;
+    --foreground: 0 0% 98%;
+    --muted: 240 4% 18%;
+    --input: 240 4% 18%;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: #000;
+    color: #fff;
+    font-family: Everett, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
 }
 
-body::before {
-  /* Sparse subset 1 */
-  background-image: radial-gradient(rgba(255, 255, 255, 0.48) 1.5px, transparent 1.5px);
-  background-size: 112px 112px;
-  background-position: 14px 10px;
-  opacity: 0.1;
-  animation: twinkleA 6.7s infinite steps(12, end);
-  transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
-}
+@layer components {
+  .glass-ticker {
+    background: rgba(255, 255, 255, 0.01);
+    backdrop-filter: blur(8px) saturate(150%);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+  }
 
-body::after {
-  /* Sparse subset 2 */
-  background-image: radial-gradient(rgba(255, 255, 255, 0.42) 1.35px, transparent 1.35px);
-  background-size: 140px 140px;
-  background-position: 42px 66px;
-  opacity: 0.085;
-  animation: twinkleB 8.9s infinite steps(14, end);
-  transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
-}
+  .liquid-glass {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
 
-#root::before {
-  /* Sparse subset 3 */
-  background-image: radial-gradient(rgba(255, 255, 255, 0.38) 1.25px, transparent 1.25px);
-  background-size: 168px 168px;
-  background-position: 88px 24px;
-  opacity: 0.075;
-  animation: twinkleC 11.3s infinite steps(16, end);
-  transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
-}
+  .liquid-glass-enhanced {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
 
-body:hover::before {
-  opacity: 0.16;
-  filter: brightness(1.25) blur(0.15px);
-  transform: scale(1.003);
-}
-
-body:hover::after {
-  opacity: 0.14;
-  filter: brightness(1.22) blur(0.15px);
-  transform: scale(1.003);
-}
-
-body:hover #root::before {
-  opacity: 0.12;
-  filter: brightness(1.2) blur(0.12px);
-  transform: scale(1.003);
-}
-
-@keyframes twinkleA {
-  0% { opacity: 0.03; background-position: 14px 10px; }
-  17% { opacity: 0.13; }
-  31% { opacity: 0.02; background-position: 18px 14px; }
-  49% { opacity: 0.14; }
-  72% { opacity: 0.04; background-position: 11px 22px; }
-  100% { opacity: 0.03; background-position: 14px 10px; }
-}
-
-@keyframes twinkleB {
-  0% { opacity: 0.02; background-position: 42px 66px; }
-  21% { opacity: 0.12; }
-  36% { opacity: 0.03; background-position: 48px 58px; }
-  57% { opacity: 0.13; }
-  83% { opacity: 0.025; background-position: 37px 72px; }
-  100% { opacity: 0.02; background-position: 42px 66px; }
-}
-
-@keyframes twinkleC {
-  0% { opacity: 0.015; background-position: 88px 24px; }
-  13% { opacity: 0.08; }
-  39% { opacity: 0.02; background-position: 96px 31px; }
-  61% { opacity: 0.09; }
-  88% { opacity: 0.018; background-position: 81px 18px; }
-  100% { opacity: 0.015; background-position: 88px 24px; }
+  .liquid-glass-header {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow:
+      0 2px 12px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
 }
